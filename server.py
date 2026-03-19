@@ -7,8 +7,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
 
-RUNPOD_API_KEY = "rpa_GXTWDDFZBD3GM4J3Z2RUHXJPARXDSUHN464Q00HE1xg8ol"
-RUNPOD_ENDPOINT_ID = os.environ.get("RUNPOD_ENDPOINT_ID", "o4ww7bfqalp485")
+RUNPOD_API_KEY = os.environ["RUNPOD_API_KEY"]
+RUNPOD_ENDPOINT_ID = os.environ["RUNPOD_ENDPOINT_ID"]
 
 app = FastAPI()
 

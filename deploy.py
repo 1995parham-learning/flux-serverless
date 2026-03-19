@@ -2,12 +2,14 @@
 
 import argparse
 import json
+import os
+
 import requests
 
-RUNPOD_API_KEY = "rpa_GXTWDDFZBD3GM4J3Z2RUHXJPARXDSUHN464Q00HE1xg8ol"
+RUNPOD_API_KEY = os.environ["RUNPOD_API_KEY"]
 GRAPHQL_URL = "https://api.runpod.io/graphql"
 DEFAULT_IMAGE = "ghcr.io/1995parham-learning/flux-serverless:latest"
-HF_TOKEN = "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"
+HF_TOKEN = os.environ["HF_TOKEN"]
 
 
 def graphql_request(query, variables=None):

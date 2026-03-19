@@ -36,14 +36,12 @@ User Request (prompt)
 
 `server.py` is a FastAPI server that acts as a local proxy to the RunPod endpoint. It exposes a `POST /generate` endpoint that accepts a JSON body with a `prompt` field, submits the job to RunPod, polls for completion, and returns the generated image directly as a PNG response.
 
-The RunPod API key is hardcoded in the server. The endpoint ID defaults to `o4ww7bfqalp485` but can be overridden via the `RUNPOD_ENDPOINT_ID` environment variable:
+The server reads `RUNPOD_API_KEY` and `RUNPOD_ENDPOINT_ID` from environment variables:
 
 ```bash
-# Use default endpoint
+export RUNPOD_API_KEY="<your-runpod-api-key>"
+export RUNPOD_ENDPOINT_ID="<your-endpoint-id>"
 uvicorn server:app --reload
-
-# Use a custom endpoint
-RUNPOD_ENDPOINT_ID=your_endpoint_id uvicorn server:app --reload
 ```
 
 ## Project Structure
@@ -74,8 +72,6 @@ RUNPOD_ENDPOINT_ID=your_endpoint_id uvicorn server:app --reload
 2. Share your account email with `hailong.yang@runpod.io` to receive free credits.
 3. Once credits are applied, grab your **API Key** from the RunPod console under **Settings > API Keys**.
 
-**RunPod API Key:** `rpa_GXTWDDFZBD3GM4J3Z2RUHXJPARXDSUHN464Q00HE1xg8ol`
-
 ### Step 2 — Hugging Face Token
 
 FLUX.1-dev is a gated model, so you need explicit access:
@@ -83,13 +79,23 @@ FLUX.1-dev is a gated model, so you need explicit access:
 1. Go to [FLUX.1-dev on Hugging Face](https://huggingface.co/black-forest-labs/FLUX.1-dev) and accept the license agreement.
 2. Create an access token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) with `read` permission.
 
+### Step 2.5 — Set Environment Variables
+
+All scripts read tokens from environment variables. Export them before running any commands:
+
+```bash
+export RUNPOD_API_KEY="<your-runpod-api-key>"
+export HF_TOKEN="<your-hugging-face-token>"
+export RUNPOD_ENDPOINT_ID="<your-endpoint-id>"
+```
+
 ### Step 3 — Build the Docker Image
 
 The build downloads the full model weights, so it requires ~30 GB of disk space and a good internet connection.
 
 ```bash
 docker build -t <your-dockerhub-username>/runpod-flux:latest \
-  --build-arg HF_TOKEN=<your-hugging-face-token> .
+  --build-arg HF_TOKEN=$HF_TOKEN .
 ```
 
 **What happens during build:**
@@ -132,7 +138,7 @@ python deploy.py delete <ENDPOINT_ID>
    - **Active Workers**: Set minimum to 0 (scale to zero when idle)
    - **Max Workers**: Set based on expected concurrency (1 is fine for testing)
    - **Environment Variables**:
-     - `HF_TOKEN` = `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`
+     - `HF_TOKEN` = `<your-hugging-face-token>`
      - `HF_HOME` = `/models`
 4. Click **Deploy**.
 5. Note the **Endpoint ID** shown on the dashboard — you'll need it for API calls.
@@ -157,7 +163,7 @@ This sends the request, waits for completion, and saves the result to `output.pn
 
 ```bash
 curl -X POST "https://api.runpod.ai/v2/<ENDPOINT_ID>/runsync" \
-  -H "Authorization: Bearer rpa_GXTWDDFZBD3GM4J3Z2RUHXJPARXDSUHN464Q00HE1xg8ol" \
+  -H "Authorization: Bearer $RUNPOD_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "input": {

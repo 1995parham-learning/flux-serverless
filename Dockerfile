@@ -3,7 +3,8 @@ FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV HF_HOME=/models
-ENV HF_TOKEN=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
+ARG HF_TOKEN
+ENV HF_TOKEN=${HF_TOKEN}
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
