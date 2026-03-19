@@ -1,4 +1,4 @@
-# flux-serverless
+# Flux Serverless
 
 Serverless text-to-image generation endpoint powered by FLUX.1-dev on RunPod. Send a text prompt, get a high-quality 1024x1024 image back.
 
