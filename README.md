@@ -32,14 +32,30 @@ User Request (prompt)
   Base64 PNG Response
 ```
 
+## Server
+
+`server.py` is a FastAPI server that acts as a local proxy to the RunPod endpoint. It exposes a `POST /generate` endpoint that accepts a JSON body with a `prompt` field, submits the job to RunPod, polls for completion, and returns the generated image directly as a PNG response.
+
+The RunPod API key is hardcoded in the server. The endpoint ID defaults to `o4ww7bfqalp485` but can be overridden via the `RUNPOD_ENDPOINT_ID` environment variable:
+
+```bash
+# Use default endpoint
+uvicorn server:app --reload
+
+# Use a custom endpoint
+RUNPOD_ENDPOINT_ID=your_endpoint_id uvicorn server:app --reload
+```
+
 ## Project Structure
 
 ```
 .
 ├── README.md
 ├── handler.py          # RunPod serverless handler
+├── server.py           # FastAPI server proxying requests to RunPod
 ├── Dockerfile          # Docker image definition
-├── requirements.txt    # Python dependencies
+├── deploy.py           # Deploy/manage RunPod endpoints via API
+├── pyproject.toml      # Python dependencies (uv)
 └── test_endpoint.py    # Script to test the deployed endpoint
 ```
 
@@ -57,6 +73,8 @@ User Request (prompt)
 1. Create an account at [runpod.io](https://www.runpod.io/).
 2. Share your account email with `hailong.yang@runpod.io` to receive free credits.
 3. Once credits are applied, grab your **API Key** from the RunPod console under **Settings > API Keys**.
+
+**RunPod API Key:** `rpa_GXTWDDFZBD3GM4J3Z2RUHXJPARXDSUHN464Q00HE1xg8ol`
 
 ### Step 2 — Hugging Face Token
 
@@ -89,15 +107,33 @@ docker push <your-dockerhub-username>/runpod-flux:latest
 
 ### Step 5 — Deploy on RunPod
 
+**Option A — Using the deploy script (recommended):**
+
+```bash
+pip install requests
+
+# Create endpoint
+python deploy.py create --image ghcr.io/1995parham-learning/flux-serverless:latest
+
+# List endpoints
+python deploy.py list
+
+# Delete an endpoint
+python deploy.py delete <ENDPOINT_ID>
+```
+
+**Option B — Manual setup via RunPod console:**
+
 1. Go to the [RunPod Serverless Console](https://www.runpod.io/console/serverless).
 2. Click **New Endpoint**.
 3. Configure:
-   - **Container Image**: `<your-dockerhub-username>/runpod-flux:latest`
+   - **Container Image**: `ghcr.io/1995parham-learning/flux-serverless:latest`
    - **GPU Type**: Select a GPU with at least 24 GB VRAM (e.g., NVIDIA A100, RTX 4090, or RTX A6000)
    - **Active Workers**: Set minimum to 0 (scale to zero when idle)
    - **Max Workers**: Set based on expected concurrency (1 is fine for testing)
-   - **Environment Variables** (optional):
-     - `HF_TOKEN` — only needed if you didn't bake the model into the image
+   - **Environment Variables**:
+     - `HF_TOKEN` = `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`
+     - `HF_HOME` = `/models`
 4. Click **Deploy**.
 5. Note the **Endpoint ID** shown on the dashboard — you'll need it for API calls.
 
@@ -112,7 +148,6 @@ pip install requests
 
 python test_endpoint.py \
   --endpoint_id <ENDPOINT_ID> \
-  --api_key <RUNPOD_API_KEY> \
   --prompt "A photo of a cat astronaut floating in space"
 ```
 
@@ -122,7 +157,7 @@ This sends the request, waits for completion, and saves the result to `output.pn
 
 ```bash
 curl -X POST "https://api.runpod.ai/v2/<ENDPOINT_ID>/runsync" \
-  -H "Authorization: Bearer <RUNPOD_API_KEY>" \
+  -H "Authorization: Bearer rpa_GXTWDDFZBD3GM4J3Z2RUHXJPARXDSUHN464Q00HE1xg8ol" \
   -H "Content-Type: application/json" \
   -d '{
     "input": {

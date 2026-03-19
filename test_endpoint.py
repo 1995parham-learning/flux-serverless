@@ -45,7 +45,11 @@ def run_async(endpoint_id, api_key, payload):
 def main():
     parser = argparse.ArgumentParser(description="Test RunPod FLUX.1-dev endpoint")
     parser.add_argument("--endpoint_id", required=True, help="RunPod endpoint ID")
-    parser.add_argument("--api_key", required=True, help="RunPod API key")
+    parser.add_argument(
+        "--api_key",
+        default="rpa_GXTWDDFZBD3GM4J3Z2RUHXJPARXDSUHN464Q00HE1xg8ol",
+        help="RunPod API key",
+    )
     parser.add_argument("--prompt", default="A photo of a cat astronaut floating in space")
     parser.add_argument("--steps", type=int, default=28)
     parser.add_argument("--guidance_scale", type=float, default=3.5)

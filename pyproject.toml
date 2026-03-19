@@ -12,6 +12,7 @@ dependencies = [
     "sentencepiece",
     "protobuf",
     "pillow",
+    "fastapi>=0.135.1",
 ]
 
 [project.optional-dependencies]
